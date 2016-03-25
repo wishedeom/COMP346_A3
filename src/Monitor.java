@@ -11,7 +11,11 @@ public class Monitor
 	 * Data members
 	 * ------------
 	 */
-
+	//Constant status types available to the philosopher
+	enum status {EATING, HUNGRY, THINKING, TALKING};
+	status state[];
+	
+	private int piNumberOfChopsticks;
 
 	/**
 	 * Constructor
@@ -21,6 +25,9 @@ public class Monitor
 		// Sets appropriate number of chopsticks based on the # of philosophers
 		//Since each philosopher is sharing the chopsticks, there will only be one on the right 
 		int piNumberOfChopsticks = piNumberOfPhilosophers;
+		//Initializes the state of each philosopher to thinking
+		for (int i=0; i<piNumberOfPhilosophers; ++i)
+			state[i]= status.THINKING;
 	}
 
 	/*
@@ -87,7 +94,6 @@ public class Monitor
 	}
 	
 	/**
-	 * Wait ?-
 	 * Only one philosopher at a time is allowed to philosophy
 	 * (while she is not eating).
 	 */
