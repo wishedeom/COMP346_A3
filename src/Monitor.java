@@ -18,7 +18,9 @@ public class Monitor
 	 */
 	public Monitor(int piNumberOfPhilosophers)
 	{
-		// TODO: set appropriate number of chopsticks based on the # of philosophers
+		// Sets appropriate number of chopsticks based on the # of philosophers
+		//Since each philosopher is sharing the chopsticks, there will only be one on the right 
+		int piNumberOfChopsticks = piNumberOfPhilosophers;
 	}
 
 	/*
@@ -59,14 +61,34 @@ public class Monitor
 		 * Pseudocode
 		 * 
 		 * state[piTID] == 'thinking';
-		 * test((piTID-1)%N); // circular array
-		 * test((piTID+1)%N);
+		 * test((piTID-1)%piNumberOfChopsticks); // circular array
+		 * test((piTID+1)%piNumberOfChopsticks);
 		 * 
 		 */
 	}
 
 	/**
-	 * Only one philopher at a time is allowed to philosophy
+	 * Checks that chopsticks are available from adjacent philosophers
+	 */
+	public synchronized void test(final int piTID)
+	{
+		/*
+		 * Pseudocode
+		 * 
+		 *
+		 * state[piTID] == 'hungry'; //Assume an enum state with eating, thinking and hungry as options
+		 * test(piTID);
+		 * if(state[(piTID-1)%piNumberOfChopsticks)] != 'eating' && state[piTID] == 'hungry')
+		 * {
+		 * 		state[piTID] = 'eating'
+		 * }
+		 * self[i].signal //allows signals to neighbors
+		 */
+	}
+	
+	/**
+	 * Wait ?-
+	 * Only one philosopher at a time is allowed to philosophy
 	 * (while she is not eating).
 	 */
 	public synchronized void requestTalk()
@@ -75,12 +97,13 @@ public class Monitor
 	}
 
 	/**
+	 * Signal - 
 	 * When one philosopher is done talking stuff, others
 	 * can feel free to start talking.
 	 */
 	public synchronized void endTalk()
 	{
-		// ...
+		
 	}
 }
 
