@@ -41,12 +41,34 @@ public class DiningPhilosophers
 	{
 		try
 		{
-			/*
-			 * TODO:
-			 * Should be settable from the command line
-			 * or the default if no arguments supplied.
-			 */
+			// Now depends on command-line arguments
+			// Application will fail if argument is not a non-negative integer
 			int iPhilosophers = DEFAULT_NUMBER_OF_PHILOSOPHERS;
+			if (argv.length >= 1)
+			{
+				final String arg = argv[0];
+				try
+				{
+					iPhilosophers = Integer.parseInt(arg);
+					if (iPhilosophers < 0)
+					{
+						throw new IllegalArgumentException();
+					}
+				}
+				catch (NumberFormatException e)
+				{
+					System.out.println("Number of philosophers must be integral. Received " + arg + ".");
+					reportException(e);
+					System.exit(1);
+				}
+				catch (IllegalArgumentException e)
+				{
+					System.out.println("Number of philosophers must be non-negative. Received " + iPhilosophers + ".");
+					reportException(e);
+					System.exit(1);
+				}
+			}
+			
 
 			// Make the monitor aware of how many philosophers there are
 			soMonitor = new Monitor(iPhilosophers);
@@ -61,11 +83,7 @@ public class DiningPhilosophers
 				aoPhilosophers[j].start();
 			}
 
-			System.out.println
-			(
-				iPhilosophers +
-				" philosopher(s) came in for a dinner."
-			);
+			System.out.println(iPhilosophers + " philosopher" + (iPhilosophers == 1 ? "" : "s") + " came in for a dinner.");
 
 			// Main waits for all its children to die...
 			// I mean, philosophers to finish their dinner.
