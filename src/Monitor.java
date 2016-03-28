@@ -1,3 +1,6 @@
+import java.util.LinkedList;
+import java.util.Queue;
+
 /**
  * Class Monitor
  * To synchronize dining philosophers.
@@ -12,10 +15,11 @@ public class Monitor
 	 * ------------
 	 */
 	//Constant status types available to the philosopher
-	enum status {EATING, HUNGRY, THINKING, TALKING};
-	status state[];
-	
+	private enum status {EATING, HUNGRY, THINKING, TALKING};
+	private status state[];
 	private int piNumberOfChopsticks;
+	Queue<Integer> busyEating = new LinkedList<Integer>();
+	Queue<Integer> busyThinking = new LinkedList<Integer>();
 
 	/**
 	 * Constructor
@@ -25,6 +29,9 @@ public class Monitor
 		// Sets appropriate number of chopsticks based on the # of philosophers
 		//Since each philosopher is sharing the chopsticks, there will only be one on the right 
 		int piNumberOfChopsticks = piNumberOfPhilosophers;
+		
+		//Sets the size of the state array
+		state = new status[piNumberOfPhilosophers];
 		//Initializes the state of each philosopher to thinking
 		for (int i=0; i<piNumberOfPhilosophers; ++i)
 			state[i]= status.THINKING;
@@ -55,6 +62,14 @@ public class Monitor
 		 * <<eat>>
 		 */
 		
+		state[piTID-1] = status.HUNGRY; //Assume an enum state with eating, thinking and hungry as options
+		test(piTID-1);
+		if(state[piTID-1] != status.EATING)
+			{
+				//TODO how to access Philosopher object
+				//self.wait(); //Make Philosopher object with piTID wait 
+			}
+		//piTID eat set in Philosopher object
 		
 	}
 
