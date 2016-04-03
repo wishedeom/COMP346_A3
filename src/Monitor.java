@@ -33,7 +33,7 @@ public class Monitor
 	{
 		// Sets appropriate number of chopsticks based on the # of philosophers
 		//Since each philosopher is sharing the chopsticks, there will only be one on the right 
-		int piNumberOfChopsticks = piNumberOfPhilosophers;
+		this.piNumberOfChopsticks = piNumberOfPhilosophers;
 		
 		talkingCondition = false;
 		
@@ -68,6 +68,7 @@ public class Monitor
 		 * }
 		 * <<eat>> //happens after return
 		 */
+		System.out.println(piTID);
 		
 		state[piTID] = status.HUNGRY; //Assume an enum state with eating, thinking and hungry as options
 		test(piTID);
@@ -120,13 +121,12 @@ public class Monitor
 		 * self[i].signal //allows signals to neighbors
 		 */
 		 state[piTID].equals(status.HUNGRY); //Assume an enum state with eating, thinking and hungry as options
-		 test(piTID);
+		 System.out.println("Chopstick" + piNumberOfChopsticks);
 		 if(!state[(piTID)%piNumberOfChopsticks].equals(status.EATING) && state[piTID].equals(status.HUNGRY))
 			 {
 			  	state[piTID] = status.EATING;
 			 }
 		 //self[i].signal() //allows signals to neighbors
-		
 		
 	}
 	
@@ -140,8 +140,12 @@ public class Monitor
 		//check whether she can talk
 		//continue if possible
 		//wait if busy by adding to queue
-		while (!busyTalking.isEmpty()){}
 		busyTalking.add(piTID);
+		while (!(busyTalking.size()==1))
+		{
+		}
+			
+		
 		
 	}
 
