@@ -20,7 +20,8 @@ public class Monitor
 	private status state[];
 	private int piNumberOfChopsticks;
 	
-	private boolean busyTalking;
+	private int talkCounter;
+//	private boolean busyTalking;
 //	private boolean busyEating;
 	
 	private Condition okToEat[];
@@ -35,8 +36,8 @@ public class Monitor
 		//Since each philosopher is sharing the chopsticks, there will only be one on the right 
 		piNumberOfChopsticks = (piNumberOfPhilosophers); //-1 to account for the fact that we are including the value 0
 		
-		busyTalking = false;
-		
+		//busyTalking = false;
+		talkCounter = 0;
 		okToEat = new Condition[piNumberOfPhilosophers];
 		
 		//Sets the size of the state array
@@ -85,6 +86,10 @@ public class Monitor
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
 					//e.printStackTrace();
+				} 
+				//Handles initial cases when okToEat[piTID] is null
+				catch (NullPointerException e) {
+					//e.printStackTrace();
 				}
 			}
 		//piTID eat set in Philosopher object
@@ -105,7 +110,6 @@ public class Monitor
 		 * 
 		 */
 		 state[piTID].equals(status.THINKING); 
-		 //state[(((piTID-1)%(piNumberOfChopsticks)+piNumberOfChopsticks)%piNumberOfChopsticks)]).equals(status.EATING)
 		 test(((piTID-1)%piNumberOfChopsticks+piNumberOfChopsticks)%piNumberOfChopsticks); 
 		 test(((piTID+1)%piNumberOfChopsticks+piNumberOfChopsticks)%piNumberOfChopsticks);
 		
@@ -130,16 +134,11 @@ public class Monitor
 		 */
 		 state[piTID].equals(status.HUNGRY); //Assume an enum state with eating, thinking and hungry as options
 		 
-		 //TODO Find out why -1 is leading to out of bounds exception
-		 
-		 System.out.println("Mod value " + (piNumberOfChopsticks));
+		 //System.out.println("Mod value " + (piNumberOfChopsticks));
 		 System.out.println("piTID " + piTID);
 		 System.out.println("Index of left philosopher" + (((piTID-1)%(piNumberOfChopsticks)+piNumberOfChopsticks)%piNumberOfChopsticks));
 		 System.out.println("Index of right philosopher" + (((piTID+1)%(piNumberOfChopsticks)+piNumberOfChopsticks)%piNumberOfChopsticks));
-		
-//		 System.out.println(state[(piTID-1)%((((piTID-1)%(piNumberOfChopsticks)+piNumberOfChopsticks)%piNumberOfChopsticks))]);
-//		 System.out.println(state[(piTID+1)%((((piTID+1)%(piNumberOfChopsticks)+piNumberOfChopsticks)%piNumberOfChopsticks))]);
-		 
+			 
 		 if(!(state[(((piTID-1)%(piNumberOfChopsticks)+piNumberOfChopsticks)%piNumberOfChopsticks)]).equals(status.EATING)
 				 && !(state[(((piTID+1)%(piNumberOfChopsticks)+piNumberOfChopsticks)%piNumberOfChopsticks)]).equals(status.EATING)
 				 && state[piTID].equals(status.HUNGRY))
@@ -151,10 +150,10 @@ public class Monitor
 			    try{
 			    	okToEat[piTID].signal();
 			    }
+			    //Handles the case when there is no okToEat[piTID] to signal
 			    catch (NullPointerException e) {
 					// TODO Auto-generated catch block
 					//e.printStackTrace();
-			    	System.out.println("Null pointer when signaling");
 				}
 			 }
 		 //self[i].signal() //allows signals to neighbors	
@@ -162,18 +161,28 @@ public class Monitor
 	
 	/**
 	 * Only one philosopher at a time is allowed to philosophy
-	 * (while she is not eating).
+	 * (while she is not eating). 
 	 */
-	public synchronized void requestTalk(final int piTID)
+	public synchronized void requestTalk(final int piTID) 
 	{
 		//check whether she can talk
 		//continue if possible
 		//wait if busy by adding to queue
-		//okToTalk.wait();
-//		while (!(okToTalk.))
-//		{
-//		}
-			
+		if(talkCounter>0)
+		{
+			try 
+			{
+				okToTalk.wait();
+			}
+			catch (InterruptedException e) 
+			{
+				// TODO Auto-generated catch block
+				//talkCounter++; //ensures that the talk counter is incremented to prevent other threads from 
+				e.printStackTrace();
+			}
+		}
+		talkCounter++;
+		
 	}
 
 	/**
@@ -186,27 +195,9 @@ public class Monitor
 		//after talking, set 
 		//continue if possible
 		//wait if busy by adding to queue
-		
+		talkCounter--;
+		okToTalk.signal();
 	}
-	
-//	public synchronized void Signal()
-//	{
-//		while(!okToTalk.isEmpty())
-//		{
-//					
-//		}
-//		
-////		notify();
-//	}
-//	
-//	/**
-//	
-//	 */
-//	public synchronized void Wait(final int piTID)
-//	{
-//		okToTalk.add(piTID);
-//	}
-	
 }
 
 // EOF
