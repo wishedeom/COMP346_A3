@@ -15,7 +15,9 @@ public class Monitor
 	 * ------------
 	 */
 	//Constant status types available to the philosopher
-	private enum status {EATING, HUNGRY, THINKING, TALKING};
+	private enum status {EATING, HUNGRY, THINKING, TALKING}
+
+	private static final boolean VERBOSE = false;
 	
 	private status state[];
 	private int piNumberOfChopsticks;
@@ -74,10 +76,8 @@ public class Monitor
 		 * }
 		 * <<eat>> //happens after return
 		 */
-		//System.out.println(piTID);
-		System.out.println("piTID in pickup " + piTID);
+	
 		state[piTID] = status.HUNGRY; //Assume an enum state with eating, thinking and hungry as options
-		System.out.println(piTID + " pickup status " + state[piTID]);
 		test(piTID);
 		if(state[piTID] != status.EATING)
 			{
@@ -112,7 +112,6 @@ public class Monitor
 		 state[piTID].equals(status.THINKING); 
 		 test(((piTID-1)%piNumberOfChopsticks+piNumberOfChopsticks)%piNumberOfChopsticks); 
 		 test(((piTID+1)%piNumberOfChopsticks+piNumberOfChopsticks)%piNumberOfChopsticks);
-		
 	}
 
 	/**
@@ -134,10 +133,13 @@ public class Monitor
 		 */
 		 state[piTID].equals(status.HUNGRY); //Assume an enum state with eating, thinking and hungry as options
 		 
-		 //System.out.println("Mod value " + (piNumberOfChopsticks));
-		 System.out.println("piTID " + piTID);
-		 System.out.println("Index of left philosopher" + (((piTID-1)%(piNumberOfChopsticks)+piNumberOfChopsticks)%piNumberOfChopsticks));
-		 System.out.println("Index of right philosopher" + (((piTID+1)%(piNumberOfChopsticks)+piNumberOfChopsticks)%piNumberOfChopsticks));
+		 if(VERBOSE)
+		 {
+			 System.out.println("Mod value " + (piNumberOfChopsticks));
+			 System.out.println("piTID " + piTID);
+			 System.out.println("Index of left philosopher" + (((piTID-1)%(piNumberOfChopsticks)+piNumberOfChopsticks)%piNumberOfChopsticks));
+			 System.out.println("Index of right philosopher" + (((piTID+1)%(piNumberOfChopsticks)+piNumberOfChopsticks)%piNumberOfChopsticks));
+		 }
 			 
 		 if(!(state[(((piTID-1)%(piNumberOfChopsticks)+piNumberOfChopsticks)%piNumberOfChopsticks)]).equals(status.EATING)
 				 && !(state[(((piTID+1)%(piNumberOfChopsticks)+piNumberOfChopsticks)%piNumberOfChopsticks)]).equals(status.EATING)
@@ -145,18 +147,17 @@ public class Monitor
 			 {
 			 	//busyEating = true; //TODO check placement
 			    state[piTID] = status.EATING;
-			    System.out.println("Signaling piTID" + piTID);
-			    
-			    try{
-			    	okToEat[piTID].signal();
-			    }
-			    //Handles the case when there is no okToEat[piTID] to signal
-			    catch (NullPointerException e) {
-					// TODO Auto-generated catch block
-					//e.printStackTrace();
-				}
 			 }
-		 //self[i].signal() //allows signals to neighbors	
+		 try
+		 {
+		    okToEat[piTID].signal();
+		 }
+	    //Handles the case when there is no okToEat[piTID] to signal
+	    catch (NullPointerException e) {
+			// TODO Auto-generated catch block
+			//e.printStackTrace();
+		}
+		
 	}
 	
 	/**

@@ -1,5 +1,6 @@
 import common.BaseThread;
 
+
 /**
  * Class Philosopher.
  * Outlines main subroutines of our virtual philosopher.
