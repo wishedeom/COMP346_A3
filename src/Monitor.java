@@ -1,6 +1,5 @@
-import java.util.LinkedList;
-import java.util.Queue;
 import java.util.concurrent.locks.Condition;
+
 
 /**
  * Class Monitor
@@ -17,15 +16,16 @@ public class Monitor
 	 */
 	//Constant status types available to the philosopher
 	private enum status {EATING, HUNGRY, THINKING, TALKING};
+	
 	private status state[];
 	private int piNumberOfChopsticks;
 	
-//	private Object eatingLock;
-	private boolean talkingCondition;
+	private boolean busyTalking;
+//	private boolean busyEating;
 	
-//	Queue<Integer> busyEating = new LinkedList<Integer>();
-	Queue<Integer> busyTalking = new LinkedList<Integer>();
-
+	private Condition okToEat[];
+	private Condition okToTalk;
+	
 	/**
 	 * Constructor
 	 */
@@ -33,15 +33,20 @@ public class Monitor
 	{
 		// Sets appropriate number of chopsticks based on the # of philosophers
 		//Since each philosopher is sharing the chopsticks, there will only be one on the right 
-		this.piNumberOfChopsticks = piNumberOfPhilosophers;
+		piNumberOfChopsticks = (piNumberOfPhilosophers); //-1 to account for the fact that we are including the value 0
 		
-		talkingCondition = false;
+		busyTalking = false;
+		
+		okToEat = new Condition[piNumberOfPhilosophers];
 		
 		//Sets the size of the state array
 		state = new status[piNumberOfPhilosophers];
 		//Initializes the state of each philosopher to thinking
 		for (int i=0; i<piNumberOfPhilosophers; ++i)
+		{
 			state[i]= status.THINKING;
+			System.out.println(state[i]);
+		}
 	}
 
 	/*
@@ -68,19 +73,21 @@ public class Monitor
 		 * }
 		 * <<eat>> //happens after return
 		 */
-		System.out.println(piTID);
-		
+		//System.out.println(piTID);
+		System.out.println("piTID in pickup " + piTID);
 		state[piTID] = status.HUNGRY; //Assume an enum state with eating, thinking and hungry as options
+		System.out.println(piTID + " pickup status " + state[piTID]);
 		test(piTID);
-		while(state[piTID] != status.EATING)
+		if(state[piTID] != status.EATING)
 			{
-				//TODO figure out how to access Philosopher object to get it to wait!
-				//self.yield();
-				//wait(piTID); 
-				continue;
+				try {
+					okToEat[piTID].wait();
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					//e.printStackTrace();
+				}
 			}
 		//piTID eat set in Philosopher object
-		
 	}
 
 	/**
@@ -97,9 +104,10 @@ public class Monitor
 		 * test((piTID+1)%piNumberOfChopsticks);
 		 * 
 		 */
-		 state[piTID].equals(status.THINKING); //TODO not sure whether the philosopher should be set back to thinking or simply notify
-		 test((piTID-1)%piNumberOfChopsticks); 
-		 test((piTID+1)%piNumberOfChopsticks);
+		 state[piTID].equals(status.THINKING); 
+		 //state[(((piTID-1)%(piNumberOfChopsticks)+piNumberOfChopsticks)%piNumberOfChopsticks)]).equals(status.EATING)
+		 test(((piTID-1)%piNumberOfChopsticks+piNumberOfChopsticks)%piNumberOfChopsticks); 
+		 test(((piTID+1)%piNumberOfChopsticks+piNumberOfChopsticks)%piNumberOfChopsticks);
 		
 	}
 
@@ -121,15 +129,36 @@ public class Monitor
 		 * self[i].signal //allows signals to neighbors
 		 */
 		 state[piTID].equals(status.HUNGRY); //Assume an enum state with eating, thinking and hungry as options
-		 System.out.println("Chopstick" + piNumberOfChopsticks);
-		 if(!state[(piTID)%piNumberOfChopsticks].equals(status.EATING) && state[piTID].equals(status.HUNGRY))
-			 {
-			  	state[piTID] = status.EATING;
-			 }
-		 //self[i].signal() //allows signals to neighbors
+		 
+		 //TODO Find out why -1 is leading to out of bounds exception
+		 
+		 System.out.println("Mod value " + (piNumberOfChopsticks));
+		 System.out.println("piTID " + piTID);
+		 System.out.println("Index of left philosopher" + (((piTID-1)%(piNumberOfChopsticks)+piNumberOfChopsticks)%piNumberOfChopsticks));
+		 System.out.println("Index of right philosopher" + (((piTID+1)%(piNumberOfChopsticks)+piNumberOfChopsticks)%piNumberOfChopsticks));
 		
+//		 System.out.println(state[(piTID-1)%((((piTID-1)%(piNumberOfChopsticks)+piNumberOfChopsticks)%piNumberOfChopsticks))]);
+//		 System.out.println(state[(piTID+1)%((((piTID+1)%(piNumberOfChopsticks)+piNumberOfChopsticks)%piNumberOfChopsticks))]);
+		 
+		 if(!(state[(((piTID-1)%(piNumberOfChopsticks)+piNumberOfChopsticks)%piNumberOfChopsticks)]).equals(status.EATING)
+				 && !(state[(((piTID+1)%(piNumberOfChopsticks)+piNumberOfChopsticks)%piNumberOfChopsticks)]).equals(status.EATING)
+				 && state[piTID].equals(status.HUNGRY))
+			 {
+			 	//busyEating = true; //TODO check placement
+			    state[piTID] = status.EATING;
+			    System.out.println("Signaling piTID" + piTID);
+			    
+			    try{
+			    	okToEat[piTID].signal();
+			    }
+			    catch (NullPointerException e) {
+					// TODO Auto-generated catch block
+					//e.printStackTrace();
+			    	System.out.println("Null pointer when signaling");
+				}
+			 }
+		 //self[i].signal() //allows signals to neighbors	
 	}
-	
 	
 	/**
 	 * Only one philosopher at a time is allowed to philosophy
@@ -140,13 +169,11 @@ public class Monitor
 		//check whether she can talk
 		//continue if possible
 		//wait if busy by adding to queue
-		busyTalking.add(piTID);
-		while (!(busyTalking.size()==1))
-		{
-		}
+		//okToTalk.wait();
+//		while (!(okToTalk.))
+//		{
+//		}
 			
-		
-		
 	}
 
 	/**
@@ -162,23 +189,23 @@ public class Monitor
 		
 	}
 	
-	public synchronized void Signal()
-	{
-		while(!busyTalking.isEmpty())
-		{
-					
-		}
-		
-//		notify();
-	}
-	
-	/**
-	
-	 */
-	public synchronized void Wait(final int piTID)
-	{
-		busyTalking.add(piTID);
-	}
+//	public synchronized void Signal()
+//	{
+//		while(!okToTalk.isEmpty())
+//		{
+//					
+//		}
+//		
+////		notify();
+//	}
+//	
+//	/**
+//	
+//	 */
+//	public synchronized void Wait(final int piTID)
+//	{
+//		okToTalk.add(piTID);
+//	}
 	
 }
 

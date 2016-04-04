@@ -75,7 +75,7 @@ public class Philosopher extends BaseThread
 	 */
 	public void talk()
 	{
-		DiningPhilosophers.soMonitor.requestTalk(getTID()-1); //Adjusted in order to correspond with Thread number
+		DiningPhilosophers.soMonitor.requestTalk(getTID()); //Adjusted in order to correspond with Thread number
 		System.out.println("Philosopher #" + getTID() + " has started talking.");
 		yield();
 		saySomething();
