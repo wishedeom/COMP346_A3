@@ -40,6 +40,7 @@ public class Monitor
 		
 		//busyTalking = false;
 		talkCounter = 0;
+		//okToTalk = new Condition;
 		okToEat = new Condition[piNumberOfPhilosophers];
 		
 		//Sets the size of the state array
@@ -164,7 +165,7 @@ public class Monitor
 	 * Only one philosopher at a time is allowed to philosophy
 	 * (while she is not eating). 
 	 */
-	public synchronized void requestTalk(final int piTID) 
+	public synchronized void requestTalk() 
 	{
 		//check whether she can talk
 		//continue if possible
@@ -197,7 +198,13 @@ public class Monitor
 		//continue if possible
 		//wait if busy by adding to queue
 		talkCounter--;
-		okToTalk.signal();
+		try{
+			okToTalk.signal();
+		}
+		catch(NullPointerException e) {
+			// TODO Auto-generated catch block
+			//e.printStackTrace();
+		}
 	}
 }
 

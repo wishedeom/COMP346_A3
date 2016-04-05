@@ -1,4 +1,5 @@
 import common.BaseThread;
+import java.util.Random;
 
 
 /**
@@ -76,7 +77,6 @@ public class Philosopher extends BaseThread
 	 */
 	public void talk()
 	{
-		DiningPhilosophers.soMonitor.requestTalk(getTID()); //Adjusted in order to correspond with Thread number
 		System.out.println("Philosopher #" + getTID() + " has started talking.");
 		yield();
 		saySomething();
@@ -100,15 +100,17 @@ public class Philosopher extends BaseThread
 			think();
 
 			/*
-			 * TODO:
 			 * A decision is made at random whether this particular
 			 * philosopher is about to say something terribly useful.
 			 */
-			if(true == false)
+			Random rand = new Random();
+			int randomNum = rand.nextInt(101);
+
+			if(randomNum > 50) //gives a 50% chance that the philosopher will try to speak
 			{
-				// Some monitor ops down here...
+				DiningPhilosophers.soMonitor.requestTalk(); 
 				talk();
-				// ...
+				DiningPhilosophers.soMonitor.endTalk(); 
 			}
 
 			yield();
