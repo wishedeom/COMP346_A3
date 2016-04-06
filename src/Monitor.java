@@ -82,14 +82,7 @@ public class Monitor
 	 */
 	public synchronized void putDown(final int piTID)
 	{
-		/*
-		 * Pseudocode
-		 * 
-		 * state[piTID] == 'thinking';
-		 * test((piTID-1)%piNumberOfChopsticks); // circular array
-		 * test((piTID+1)%piNumberOfChopsticks);
-		 * 
-		 */
+	
 		 state[piTID] = status.THINKING;
 		 notifyAll();		 
 	}
@@ -102,7 +95,6 @@ public class Monitor
 		return state[Math.floorMod(piTID - 1, piNumberOfChopsticks)] != status.EATING
 				&& state[Math.floorMod(piTID + 1, piNumberOfChopsticks)] != status.EATING
 				&& state[piTID] == status.HUNGRY;
-		
 	}
 	
 	/**
@@ -111,9 +103,6 @@ public class Monitor
 	 */
 	public synchronized void requestTalk(final int piTID) 
 	{
-		//check whether she can talk
-		//continue if possible
-		//wait if busy by adding to queue
 		while (true)
 		{
 			if(!busyTalking && state[piTID] != status.EATING)
@@ -134,15 +123,11 @@ public class Monitor
 	}
 
 	/**
-	 * Signal all- 
 	 * When one philosopher is done talking stuff, others
 	 * can feel free to start talking.
 	 */
 	public synchronized void endTalk()
 	{
-		//after talking, set 
-		//continue if possible
-		//wait if busy by adding to queue
 		busyTalking = false;
 		notifyAll();
 	}
