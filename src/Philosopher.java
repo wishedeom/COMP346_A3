@@ -1,5 +1,6 @@
-import common.BaseThread;
 import java.util.Random;
+
+import common.BaseThread;
 
 
 /**
@@ -91,15 +92,16 @@ public class Philosopher extends BaseThread
 	{
 		for(int i = 0; i < DiningPhilosophers.DINING_STEPS; i++)
 		{
-			DiningPhilosophers.soMonitor.pickUp(getTID()-1);
+			DiningPhilosophers.soMonitor.pickUp(getTID());
 
 			eat();
 
-			DiningPhilosophers.soMonitor.putDown(getTID()-1);
+			DiningPhilosophers.soMonitor.putDown(getTID());
 
 			think();
 
 			/*
+			 * TODO:
 			 * A decision is made at random whether this particular
 			 * philosopher is about to say something terribly useful.
 			 */
@@ -108,7 +110,7 @@ public class Philosopher extends BaseThread
 
 			if(randomNum > 50) //gives a 50% chance that the philosopher will try to speak
 			{
-				DiningPhilosophers.soMonitor.requestTalk(); 
+				DiningPhilosophers.soMonitor.requestTalk(getTID()); 
 				talk();
 				DiningPhilosophers.soMonitor.endTalk(); 
 			}
@@ -134,7 +136,7 @@ public class Philosopher extends BaseThread
 
 		System.out.println
 		(
-			"Philosopher " + getTID() + " says: " +
+			"Philosopher #" + getTID() + " says: " +
 			astrPhrases[(int)(Math.random() * astrPhrases.length)]
 		);
 	}

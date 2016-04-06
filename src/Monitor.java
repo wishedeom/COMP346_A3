@@ -1,6 +1,3 @@
-import java.util.concurrent.locks.Condition;
-
-
 /**
  * Class Monitor
  * To synchronize dining philosophers.
@@ -15,19 +12,13 @@ public class Monitor
 	 * ------------
 	 */
 	//Constant status types available to the philosopher
-	private enum status {EATING, HUNGRY, THINKING, TALKING}
-
-	private static final boolean VERBOSE = false;
+	private enum status {EATING, HUNGRY, THINKING}
 	
 	private status state[];
 	private int piNumberOfChopsticks;
 	
-	private int talkCounter;
-//	private boolean busyTalking;
-//	private boolean busyEating;
+	private boolean busyTalking;
 	
-	private Condition okToEat[];
-	private Condition okToTalk;
 	
 	/**
 	 * Constructor
@@ -36,20 +27,18 @@ public class Monitor
 	{
 		// Sets appropriate number of chopsticks based on the # of philosophers
 		//Since each philosopher is sharing the chopsticks, there will only be one on the right 
-		piNumberOfChopsticks = (piNumberOfPhilosophers); //-1 to account for the fact that we are including the value 0
+		piNumberOfChopsticks = piNumberOfPhilosophers; //-1 to account for the fact that we are including the value 0
 		
 		//busyTalking = false;
-		talkCounter = 0;
-		//okToTalk = new Condition;
-		okToEat = new Condition[piNumberOfPhilosophers];
+		busyTalking = false;
 		
 		//Sets the size of the state array
 		state = new status[piNumberOfPhilosophers];
 		//Initializes the state of each philosopher to thinking
 		for (int i=0; i<piNumberOfPhilosophers; ++i)
 		{
-			state[i]= status.THINKING;
-			System.out.println(state[i]);
+			state[i] = status.THINKING;
+			System.out.println("Philosopher #" + i + " begins by " + state[i]);
 		}
 	}
 
@@ -65,35 +54,26 @@ public class Monitor
 	 */
 	public synchronized void pickUp(final int piTID)
 	{
-		/*
-		 * Pseudocode
-		 * 
-		 *
-		 * state[piTID] == 'hungry'; //Assume an enum state with eating, thinking and hungry as options
-		 * test(piTID);
-		 * if(state[piTID] != 'eating'
-		 * {
-		 * 		self.wait();
-		 * }
-		 * <<eat>> //happens after return
-		 */
-	
-		state[piTID] = status.HUNGRY; //Assume an enum state with eating, thinking and hungry as options
-		test(piTID);
-		if(state[piTID] != status.EATING)
+		// The philosopher is hungry.
+		state[piTID] = status.HUNGRY;
+		
+		// Keep checking if neighbours are eating: If they are, wait. If they are not, and I am hungry, start eating!
+		while(true)
+		{
+			if(testNeighbours(piTID))
 			{
-				try {
-					okToEat[piTID].wait();
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					//e.printStackTrace();
-				} 
-				//Handles initial cases when okToEat[piTID] is null
-				catch (NullPointerException e) {
-					//e.printStackTrace();
-				}
+				state[piTID] = status.EATING;
+				break;
 			}
-		//piTID eat set in Philosopher object
+			try
+			{
+				wait();
+			}
+			catch (InterruptedException e)
+			{
+				e.printStackTrace();
+			}
+		}
 	}
 
 	/**
@@ -110,54 +90,18 @@ public class Monitor
 		 * test((piTID+1)%piNumberOfChopsticks);
 		 * 
 		 */
-		 state[piTID].equals(status.THINKING); 
-		 test(((piTID-1)%piNumberOfChopsticks+piNumberOfChopsticks)%piNumberOfChopsticks); 
-		 test(((piTID+1)%piNumberOfChopsticks+piNumberOfChopsticks)%piNumberOfChopsticks);
+		 state[piTID] = status.THINKING;
+		 notifyAll();		 
 	}
 
 	/**
-	 * Checks that chopsticks are available from adjacent philosophers
+	 * Checks that chopsticks are available from adjacent philosophers and that the given philosopher is hungry.
 	 */
-	public synchronized void test(final int piTID)
+	public synchronized boolean testNeighbours(final int piTID)
 	{
-		/*
-		 * Pseudocode
-		 * 
-		 *
-		 * state[piTID] == 'hungry'; //Assume an enum state with eating, thinking and hungry as options
-		 * test(piTID);
-		 * if(state[(piTID-1)%piNumberOfChopsticks)] != 'eating' && state[piTID] == 'hungry')
-		 * {
-		 * 		state[piTID] = 'eating'
-		 * }
-		 * self[i].signal //allows signals to neighbors
-		 */
-		 state[piTID].equals(status.HUNGRY); //Assume an enum state with eating, thinking and hungry as options
-		 
-		 if(VERBOSE)
-		 {
-			 System.out.println("Mod value " + (piNumberOfChopsticks));
-			 System.out.println("piTID " + piTID);
-			 System.out.println("Index of left philosopher" + (((piTID-1)%(piNumberOfChopsticks)+piNumberOfChopsticks)%piNumberOfChopsticks));
-			 System.out.println("Index of right philosopher" + (((piTID+1)%(piNumberOfChopsticks)+piNumberOfChopsticks)%piNumberOfChopsticks));
-		 }
-			 
-		 if(!(state[(((piTID-1)%(piNumberOfChopsticks)+piNumberOfChopsticks)%piNumberOfChopsticks)]).equals(status.EATING)
-				 && !(state[(((piTID+1)%(piNumberOfChopsticks)+piNumberOfChopsticks)%piNumberOfChopsticks)]).equals(status.EATING)
-				 && state[piTID].equals(status.HUNGRY))
-			 {
-			 	//busyEating = true; //TODO check placement
-			    state[piTID] = status.EATING;
-			 }
-		 try
-		 {
-		    okToEat[piTID].signal();
-		 }
-	    //Handles the case when there is no okToEat[piTID] to signal
-	    catch (NullPointerException e) {
-			// TODO Auto-generated catch block
-			//e.printStackTrace();
-		}
+		return state[Math.floorMod(piTID - 1, piNumberOfChopsticks)] != status.EATING
+				&& state[Math.floorMod(piTID + 1, piNumberOfChopsticks)] != status.EATING
+				&& state[piTID] == status.HUNGRY;
 		
 	}
 	
@@ -165,25 +109,27 @@ public class Monitor
 	 * Only one philosopher at a time is allowed to philosophy
 	 * (while she is not eating). 
 	 */
-	public synchronized void requestTalk() 
+	public synchronized void requestTalk(final int piTID) 
 	{
 		//check whether she can talk
 		//continue if possible
 		//wait if busy by adding to queue
-		if(talkCounter>0)
+		while (true)
 		{
-			try 
+			if(!busyTalking && state[piTID] != status.EATING)
 			{
-				okToTalk.wait();
+				busyTalking = true;
+				break;
 			}
-			catch (InterruptedException e) 
+			try
 			{
-				// TODO Auto-generated catch block
-				//talkCounter++; //ensures that the talk counter is incremented to prevent other threads from 
+				wait();
+			}
+			catch (InterruptedException e)
+			{
 				e.printStackTrace();
 			}
 		}
-		talkCounter++;
 		
 	}
 
@@ -197,14 +143,8 @@ public class Monitor
 		//after talking, set 
 		//continue if possible
 		//wait if busy by adding to queue
-		talkCounter--;
-		try{
-			okToTalk.signal();
-		}
-		catch(NullPointerException e) {
-			// TODO Auto-generated catch block
-			//e.printStackTrace();
-		}
+		busyTalking = false;
+		notifyAll();
 	}
 }
 
