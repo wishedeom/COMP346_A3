@@ -28,11 +28,11 @@ public class Philosopher extends BaseThread
 	{
 		try
 		{
-			System.out.println("Philosopher #" + getTID() + " has started eating.");
+			System.out.println("Philosopher #" + tid() + " has started eating.");
 			yield();
 			sleep((long)(Math.random() * TIME_TO_WASTE));
 			yield();
-			System.out.println("Philosopher #" + getTID() + " has finished eating.");
+			System.out.println("Philosopher #" + tid() + " has finished eating.");
 		}
 		catch(InterruptedException e)
 		{
@@ -54,11 +54,11 @@ public class Philosopher extends BaseThread
 	{
 		try
 		{
-			System.out.println("Philosopher #" + getTID() + " has started thinking.");
+			System.out.println("Philosopher #" + tid() + " has started thinking.");
 			yield();
 			sleep((long)(Math.random() * TIME_TO_WASTE));
 			yield();
-			System.out.println("Philosopher #" + getTID() + " has finished thinking.");
+			System.out.println("Philosopher #" + tid() + " has finished thinking.");
 		}
 		catch(InterruptedException e)
 		{
@@ -78,11 +78,11 @@ public class Philosopher extends BaseThread
 	 */
 	public void talk()
 	{
-		System.out.println("Philosopher #" + getTID() + " has started talking.");
+		System.out.println("Philosopher #" + tid() + " has started talking.");
 		yield();
 		saySomething();
 		yield();
-		System.out.println("Philosopher #" + getTID() + " has finished talking.");
+		System.out.println("Philosopher #" + tid() + " has finished talking.");
 	}
 
 	/**
@@ -92,11 +92,11 @@ public class Philosopher extends BaseThread
 	{
 		for(int i = 0; i < DiningPhilosophers.DINING_STEPS; i++)
 		{
-			DiningPhilosophers.soMonitor.pickUp(getTID());
+			DiningPhilosophers.soMonitor.pickUp(tid());
 
 			eat();
 
-			DiningPhilosophers.soMonitor.putDown(getTID());
+			DiningPhilosophers.soMonitor.putDown(tid());
 
 			think();
 
@@ -110,7 +110,7 @@ public class Philosopher extends BaseThread
 
 			if(randomNum > 50) //gives a 50% chance that the philosopher will try to speak
 			{
-				DiningPhilosophers.soMonitor.requestTalk(getTID()); 
+				DiningPhilosophers.soMonitor.requestTalk(tid()); 
 				talk();
 				DiningPhilosophers.soMonitor.endTalk(); 
 			}
@@ -131,14 +131,19 @@ public class Philosopher extends BaseThread
 			"You know, true is false and false is true if you think of it",
 			"2 + 2 = 5 for extremely large values of 2...",
 			"If thee cannot speak, thee must be silent",
-			"My number is " + getTID() + ""
+			"My number is " + tid() + ""
 		};
 
 		System.out.println
 		(
-			"Philosopher #" + getTID() + " says: " +
+			"Philosopher #" + tid() + " says: " +
 			astrPhrases[(int)(Math.random() * astrPhrases.length)]
 		);
+	}
+	
+	public int tid()
+	{
+		return this.iTID - 1;
 	}
 }
 
